@@ -118,12 +118,12 @@ def equation_reward_func(completions, target, nums, **kwargs):
         # Check if the equation is correct and matches the ground truth
         if abs(float(result) - float(gt)) < 1e-5:
             rewards.append(1.0)
-            if random.random() < 0.10:  # 10% chance to write fully successful samples into a file
-                os.makedirs("completion_samples", exist_ok=True)
-                log_file = os.path.join("completion_samples", "success_completion_samples.txt")
-                with open(log_file, "a") as f:
-                    f.write(f"\n\n==============\n")
-                    f.write(completion)
+            # if random.random() < 0.10:  # 10% chance to write fully successful samples into a file
+            #     os.makedirs("completion_samples", exist_ok=True)
+            #     log_file = os.path.join("completion_samples", "success_completion_samples.txt")
+            #     with open(log_file, "a") as f:
+            #         f.write(f"\n\n==============\n")
+            #         f.write(completion)
         else:
             rewards.append(0.0)
       except Exception:

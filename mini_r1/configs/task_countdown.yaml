@@ -41,7 +41,3 @@ report_to:
 save_strategy: "steps"
 save_steps: 25
 seed: 42
-
-# Hugging Face Hub 
-push_to_hub: false
-hub_strategy: every_save

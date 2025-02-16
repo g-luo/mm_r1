@@ -112,6 +112,7 @@ def main(script_args, training_args, model_args):
 
     # Load the dataset
     dataset = load_dataset(script_args.dataset_name, name=script_args.dataset_config)
+    dataset = dataset.shuffle(seed=training_args.seed)
 
     # Format into conversation
     def make_conversation(example):
@@ -122,7 +123,8 @@ def main(script_args, training_args, model_args):
             ],
         }
 
-    QUESTION_TEMPLATE = "{Question}  Output the thinking process in <think> </think> and final answer (number) in <answer> </answer> tags."
+    # QUESTION_TEMPLATE = "{Question}  Output the thinking process in <think> </think> and final answer (number) in <answer> </answer> tags."
+    QUESTION_TEMPLATE = "{Question}  Output the thinking process in <think> </think> and final answer in <answer> </answer> tags."
 
     def make_conversation_image(example):
         return {
