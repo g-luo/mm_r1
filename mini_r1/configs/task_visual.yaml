@@ -3,7 +3,7 @@
 dataset_name: data/g3/g3-streetview-10k/data
 # max_pixels: 2359296
 max_pixels: 50176 # 224x224
-max_prompt_length: 256
+max_prompt_length: 1024
 max_completion_length: 1024
 
 # Model arguments
@@ -40,4 +40,5 @@ report_to:
 - wandb
 save_strategy: "steps"
 save_steps: 25
+save_total_limit: 1
 seed: 42

@@ -40,4 +40,5 @@ report_to:
 - wandb
 save_strategy: "steps"
 save_steps: 25
+save_total_limit: 1
 seed: 42
