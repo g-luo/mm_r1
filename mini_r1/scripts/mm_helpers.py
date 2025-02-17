@@ -10,9 +10,13 @@ def check_for_csv(v):
     except Exception as e:
         return None
 
-def log_completion(completions, log_path="results.csv", log_interval=10, **kwargs):
+def log_completion(completions, log_interval=10, **kwargs):
     if not hasattr(log_completion, "idx"):
         log_completion.idx = 0
+        if wandb.run is not None:
+            log_completion.log_path = f"{wandb.run.name}.csv"
+        else:
+            log_completion.log_path = "results.csv"
 
     if log_completion.idx % log_interval == 0:
         try:
@@ -21,9 +25,9 @@ def log_completion(completions, log_path="results.csv", log_interval=10, **kwarg
             results = {k: check_for_csv(v) for k, v in results.items()}
             results = {k: v for k, v in results.items() if v is not None}
             df = pd.DataFrame(results)
-            df.to_csv(log_path, mode="a", index=False, encoding='utf-8')
+            df.to_csv(log_completion.log_path, mode="a", index=False, encoding='utf-8')
             if wandb.run is not None:
-                df = pd.read_csv(log_path)
+                df = pd.read_csv(log_completion.log_path)
                 wandb.run.summary["results"] = wandb.Table(dataframe=df)
         except Exception as e:
             print(e)
