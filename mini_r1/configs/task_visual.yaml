@@ -1,6 +1,6 @@
 # Dataset arguments
 # dataset_name: data/multimodal-open-r1-8k-verified/data
-dataset_name: data/g3/g3-streetview-10k/data
+dataset_name: data/g3-streetview-9k-balanced/data
 # max_pixels: 2359296
 max_pixels: 50176 # 224x224
 max_prompt_length: 1024

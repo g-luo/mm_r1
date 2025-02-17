@@ -123,21 +123,36 @@ def main(script_args, training_args, model_args):
             ],
         }
 
-    # QUESTION_TEMPLATE = "{Question}  Output the thinking process in <think> </think> and final answer (number) in <answer> </answer> tags."
-    QUESTION_TEMPLATE = "{Question}  Output the thinking process in <think> </think> and final answer in <answer> </answer> tags."
-
     def make_conversation_image(example):
-        return {
-            "prompt": [
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "image"},
-                        {"type": "text", "text": QUESTION_TEMPLATE.format(Question=example["problem"])},
-                    ],
-                },
-            ],
-        }
+        QUESTION_TEMPLATE = "{Question}  Output the thinking process in <think> </think> and final answer in <answer> </answer> tags."
+        # QUESTION_TEMPLATE = "{Question}  Output the thinking process in <think> </think> and final answer (number) in <answer> </answer> tags."
+        # r1_prefix = [
+        #         {
+        #             "role": "user",
+        #             "content": [
+        #                 {"type": "image"},
+        #                 {"type": "text", "text": QUESTION_TEMPLATE.format(Question=example["problem"])},
+        #             ],
+        #         },
+        # ]
+        r1_prefix = [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant. You first think about the reasoning process in the mind and then provides the user with the answer."
+            },
+            {
+                "type": "image"
+            },
+            { 
+                "role": "user",
+                "content": QUESTION_TEMPLATE.format(Question=example["problem"])
+            },
+            {
+                "role": "assistant",
+                "content": "Let me solve this step by step.\n<think>"
+            }
+        ]
+        return {"prompt": r1_prefix}
 
     if "image" in dataset[script_args.dataset_train_split].features:
         dataset = dataset.map(make_conversation_image)  # Utilize multiprocessing for faster mapping
