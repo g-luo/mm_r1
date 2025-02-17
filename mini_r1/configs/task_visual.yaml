@@ -1,6 +1,9 @@
 # Dataset arguments
-# dataset_name: data/multimodal-open-r1-8k-verified/data
 dataset_name: data/g3-streetview-9k-balanced/data
+# problem: "Using the numbers {numbers}, create an equation that equals {target}. You can use basic arithmetic operations (+, -, *, /) one or multiple times but each number can only be used once. Show your work in <think> </think> tags. And return the final equation in <answer> </answer> tags, for example <answer> (1 + 2) / 3 </answer>. Think step by step inside <think> tags."
+# problem: Based on visual cues, such as road signs, architecture, vegetation, and landscape, identify the most likely country where this image was taken.
+problem: Based on the visual cues, identify the most likely country where this image was taken. You can consider visual cues like road signs, architecture, vegetation, and landscape. In your response, include specific visual details that support your conclusion, not a summary of your analysis process.
+question_template: "{Question} Show your work in <think> </think> tags. Return the final answer in <answer> </answer> tags."
 # max_pixels: 2359296
 max_pixels: 50176 # 224x224
 max_prompt_length: 1024

@@ -16,3 +16,4 @@ dependencies:
       - flash-attn
       - tensorboard
       - wandb
+      - omegaconf

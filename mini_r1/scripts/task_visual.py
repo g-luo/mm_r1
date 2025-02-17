@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import yaml
+import sys
 import os
 import re
 from dataclasses import dataclass, field
@@ -89,6 +91,8 @@ def format_reward(completions, **kwargs):
 
     pattern = r"<think>.*?</think>\s*<answer>.*?</answer>"
     completion_contents = [completion[0]["content"] for completion in completions]
+    # Add <think> since it is sometimes prefilled
+    completion_contents = ["<think>" + content for content in completion_contents]
     matches = [re.match(pattern, content) for content in completion_contents]
     return [1.0 if match else 0.0 for match in matches]
 
@@ -98,7 +102,7 @@ reward_funcs_registry = {
     "format": format_reward,
 }
 
-def main(script_args, training_args, model_args):
+def main(script_args, training_args, model_args, config_args):
     # Get reward functions
     reward_funcs = [reward_funcs_registry[func] for func in script_args.reward_funcs]
 
@@ -106,9 +110,9 @@ def main(script_args, training_args, model_args):
     dataset = load_dataset(script_args.dataset_name, name=script_args.dataset_config)
     dataset = dataset.shuffle(seed=training_args.seed)
 
-
     def make_conversation_image(example):
         # QUESTION_TEMPLATE = "{Question}  Output the thinking process in <think> </think> and final answer (number) in <answer> </answer> tags."
+        # QUESTION_TEMPLATE = "{Question} Output the thinking process in <think> </think> and final answer in <answer> </answer> tags."
         # r1_prefix = [
         #         {
         #             "role": "user",
@@ -118,7 +122,9 @@ def main(script_args, training_args, model_args):
         #             ],
         #         },
         # ]
-        QUESTION_TEMPLATE = "{Question}  Output the thinking process in <think> </think> and final answer in <answer> </answer> tags."
+        question_template = config_args["question_template"]
+        problem = config_args.get("problem", example["problem"])
+        problem = question_template.format(Question=problem)
         r1_prefix = [
             {
                 "role": "system",
@@ -130,7 +136,7 @@ def main(script_args, training_args, model_args):
             },
             { 
                 "role": "user",
-                "content": [{"type": "text", "text": QUESTION_TEMPLATE.format(Question=example["problem"])}]
+                "content": [{"type": "text", "text": problem}]
             },
             {
                 "role": "assistant",
@@ -165,8 +171,19 @@ def main(script_args, training_args, model_args):
     if training_args.push_to_hub:
         trainer.push_to_hub(dataset_name=script_args.dataset_name)
 
+def get_config():
+    args = sys.argv[1:]
+    config = {}
+    if "--config" in args:
+        config_index = args.index("--config")
+        args.pop(config_index)
+        config_path = args.pop(config_index)
+        with open(config_path) as yaml_file:
+            config = yaml.safe_load(yaml_file)
+    return config
 
 if __name__ == "__main__":
     parser = TrlParser((GRPOScriptArguments, GRPOConfig, ModelConfig))
     script_args, training_args, model_args = parser.parse_args_and_config()
-    main(script_args, training_args, model_args)
+    config_args = get_config()
+    main(script_args, training_args, model_args, config_args)
