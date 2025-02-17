@@ -98,14 +98,6 @@ reward_funcs_registry = {
     "format": format_reward,
 }
 
-SYSTEM_PROMPT = (
-    "A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant "
-    "first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning "
-    "process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., "
-    "<think> reasoning process here </think><answer> answer here </answer>"
-)
-
-
 def main(script_args, training_args, model_args):
     # Get reward functions
     reward_funcs = [reward_funcs_registry[func] for func in script_args.reward_funcs]
@@ -114,17 +106,8 @@ def main(script_args, training_args, model_args):
     dataset = load_dataset(script_args.dataset_name, name=script_args.dataset_config)
     dataset = dataset.shuffle(seed=training_args.seed)
 
-    # Format into conversation
-    def make_conversation(example):
-        return {
-            "prompt": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": example["problem"]},
-            ],
-        }
 
     def make_conversation_image(example):
-        QUESTION_TEMPLATE = "{Question}  Output the thinking process in <think> </think> and final answer in <answer> </answer> tags."
         # QUESTION_TEMPLATE = "{Question}  Output the thinking process in <think> </think> and final answer (number) in <answer> </answer> tags."
         # r1_prefix = [
         #         {
@@ -135,21 +118,23 @@ def main(script_args, training_args, model_args):
         #             ],
         #         },
         # ]
+        QUESTION_TEMPLATE = "{Question}  Output the thinking process in <think> </think> and final answer in <answer> </answer> tags."
         r1_prefix = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant. You first think about the reasoning process in the mind and then provides the user with the answer."
+                "content": [{"type": "text", "text": "You are a helpful assistant. You first think about the reasoning process in the mind and then provides the user with the answer."}]
             },
             {
-                "type": "image"
+                "role": "user",
+                "content": [{"type": "image"}]
             },
             { 
                 "role": "user",
-                "content": QUESTION_TEMPLATE.format(Question=example["problem"])
+                "content": [{"type": "text", "text": QUESTION_TEMPLATE.format(Question=example["problem"])}]
             },
             {
                 "role": "assistant",
-                "content": "Let me solve this step by step.\n<think>"
+                "content": [{"type": "text", "text": "Let me solve this step by step.\n<think>"}]
             }
         ]
         return {"prompt": r1_prefix}
@@ -157,8 +142,7 @@ def main(script_args, training_args, model_args):
     if "image" in dataset[script_args.dataset_train_split].features:
         dataset = dataset.map(make_conversation_image)  # Utilize multiprocessing for faster mapping
     else:
-        dataset = dataset.map(make_conversation)
-        dataset = dataset.remove_columns("messages")
+        raise NotImplementedError
 
     # Initialize the GRPO trainer
     trainer = GRPOTrainer(

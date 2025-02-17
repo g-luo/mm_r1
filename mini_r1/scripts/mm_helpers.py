@@ -10,10 +10,9 @@ def check_for_csv(v):
     except Exception as e:
         return None
 
-def log_completion(completions, log_path="results.csv", log_interval=100, **kwargs):
+def log_completion(completions, log_path="results.csv", log_interval=10, **kwargs):
     if not hasattr(log_completion, "idx"):
         log_completion.idx = 0
-    log_completion.idx += 1
 
     if log_completion.idx % log_interval == 0:
         try:
@@ -29,3 +28,5 @@ def log_completion(completions, log_path="results.csv", log_interval=100, **kwar
         except Exception as e:
             print(e)
             pass
+    
+    log_completion.idx += 1
